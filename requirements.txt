@@ -1,0 +1,9 @@
+requests
+boto3
+ftfy
+pytest-playwright
+pandas
+bs4
+torch
+transformers
+sentencepiece
