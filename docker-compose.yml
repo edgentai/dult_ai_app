@@ -1,7 +1,7 @@
 version: "3"
 services:
     vision:
-        image: vision
+        image: grievance
         build:
             context: .
             dockerfile: ./Dockerfile
@@ -13,8 +13,6 @@ services:
             - ./src:/dult-ai/src/src/
         environment:
           - CMD_TO_EXECUTE=run_grievance_worker
-        depends_on:
-          - localstack
 networks:
     back:
 

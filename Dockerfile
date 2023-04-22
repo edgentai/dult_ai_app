@@ -17,7 +17,7 @@ RUN chmod +x /entrypoint.sh
 ENV SRC_DIR /dult-ai/
 WORKDIR ${SRC_DIR}
 ADD ./src ${SRC_DIR}/src/
-ADD ./requirements.txt /requirements.txt
+COPY requirements.txt $SRC_DIR/
 RUN  pip3 install -r requirements.txt
 RUN python3.9 -m playwright install
 RUN python3.9 -m playwright install-deps

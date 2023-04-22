@@ -5,7 +5,7 @@ import time
 import pandas as pd
 from ftfy import fix_text
 from playwright.sync_api import sync_playwright
-from constants import twitter_scrapper_scroller
+from src.constants import twitter_scrapper_scroller
 
 
 def clean_tweets(tweets):
