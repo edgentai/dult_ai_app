@@ -43,7 +43,7 @@ def grievance_classifier(datetime, user_name, platform_name, user_message):
                 + str(class_name)
                 + "\nResponse Format - Text:class"
             )
-            class_pred = get_model_response(prompt)
+            class_pred = get_model_response(prompt)[0]
             class_pred_dict[namestr(class_name, globals())[0]] = class_pred
 
         sub_class_list = Sub_Class_Dictionary[class_pred_dict["Super_Class"]]
