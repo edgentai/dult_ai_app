@@ -21,7 +21,7 @@ COPY requirements.txt $SRC_DIR/
 RUN  pip3 install -r requirements.txt
 RUN python3.9 -m playwright install
 RUN python3.9 -m playwright install-deps
-ENV AWS_ACCESS_KEY_ID = "AKIAVQW7UWRUV7VG3ZXV"
-ENV AWS_SECRET_ACCESS_KEY = "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"
-ENV AWS_DEFAULT_REGION = "us-east-1"
+ENV AWS_ACCESS_KEY_ID AKIAVQW7UWRUV7VG3ZXV
+ENV AWS_SECRET_ACCESS_KEY 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
+ENV AWS_DEFAULT_REGION us-east-1
 ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]

@@ -94,3 +94,8 @@ Sentiment = ["Positive", "Negative", "Neutral"]
 Base_Prompt = "Given the text classify among the classes given in the list\n"
 
 twitter_scrapper_scroller = 5
+
+twitter_email_id = "dhirajdddaga@gmail.com"
+twitter_login_id = "dhirajdddaga"
+twitter_password = "Putin_lodu"
+
