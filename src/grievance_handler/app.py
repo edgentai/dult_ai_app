@@ -1,4 +1,5 @@
 import boto3
+import difflib
 from src.grievance_handler.constants import *
 from src.grievance_handler.scrapper_twitter import get_tweets
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
@@ -31,6 +32,7 @@ def grievance_classifier(datetime, user_name, platform_name, user_message):
     }
     try:
         for class_name in class_list:
+            identifier_key = str(datetime) + "_" + user_name + "_" + platform_name
             prompt = (
                 Base_Prompt
                 + user_message
@@ -39,9 +41,28 @@ def grievance_classifier(datetime, user_name, platform_name, user_message):
                 + "\nResponse Format - Text:class"
             )
             class_pred = get_model_response(prompt)[0]
-            class_pred_dict[namestr(class_name, globals())[0]] = class_pred
+            class_pred_corrected= difflib.get_close_matches(class_pred, class_name)
+            if class_pred_corrected:
+                class_pred_corrected = class_pred_corrected[0]
+            else:
+                class_pred_corrected = "Others"
+            class_pred_dict[namestr(class_name, globals())[0]] = class_pred_corrected
 
-        sub_class_list = Sub_Class_Dictionary[class_pred_dict["Super_Class"]]
+        sub_class_list = []
+        if class_pred_dict["Super_Class"] != "Others":
+            sub_class_list = Sub_Class_Dictionary[class_pred_dict["Super_Class"]]
+        else:
+            table.put_item(
+                Item={
+                     "identifier_key": identifier_key,
+                     "datetime": datetime,
+                     "user_message": user_message,
+                     "Super_Class": class_pred_dict['Super_Class'],
+                     "Intent":class_pred_dict['Intent'],
+                     "Sentiment":class_pred_dict['Sentiment'],
+                     "Sub_Class":class_pred_dict['Sub_Class']
+                })
+            return
         sub_class_prompt = (
             Base_Prompt
             + user_message
@@ -52,7 +73,7 @@ def grievance_classifier(datetime, user_name, platform_name, user_message):
         sub_class_pred = get_model_response(sub_class_prompt)[0]
         class_pred_dict["Sub_Class"] = sub_class_pred
         print("prediction is:", class_pred_dict)
-        identifier_key = str(datetime) + "_" + user_name + "_" + platform_name
+        
 
         # sh.update_cell(counter, 1, identifier_key)
         # sh.update_cell(counter, 2, user_message)
@@ -60,12 +81,15 @@ def grievance_classifier(datetime, user_name, platform_name, user_message):
         #     sh.update_cell(counter, index + 3, class_pred_dict[key])
 
         table.put_item(
-            Item={
-                "identifier_key": identifier_key,
-                "user_message": user_message,
-                "classes": class_pred_dict,
-            }
-        )
+                Item={
+                     "identifier_key": identifier_key,
+                     "datetime": datetime,
+                     "user_message": user_message,
+                     "Super_Class": class_pred_dict['Super_Class'],
+                     "Intent":class_pred_dict['Intent'],
+                     "Sentiment":class_pred_dict['Sentiment'],
+                     "Sub_Class":class_pred_dict['Sub_Class']
+        })
     except Exception as e:
         print("Exception is:", e)
 
