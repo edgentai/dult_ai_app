@@ -98,4 +98,3 @@ twitter_scrapper_scroller = 5
 twitter_email_id = "dhirajdddaga@gmail.com"
 twitter_login_id = "dhirajdddaga"
 twitter_password = "Putin_lodu"
-

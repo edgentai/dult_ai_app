@@ -41,7 +41,7 @@ def grievance_classifier(datetime, user_name, platform_name, user_message):
                 + "\nResponse Format - Text:class"
             )
             class_pred = get_model_response(prompt)[0]
-            class_pred_corrected= difflib.get_close_matches(class_pred, class_name)
+            class_pred_corrected = difflib.get_close_matches(class_pred, class_name)
             if class_pred_corrected:
                 class_pred_corrected = class_pred_corrected[0]
             else:
@@ -54,14 +54,15 @@ def grievance_classifier(datetime, user_name, platform_name, user_message):
         else:
             table.put_item(
                 Item={
-                     "identifier_key": identifier_key,
-                     "datetime": datetime,
-                     "user_message": user_message,
-                     "Super_Class": class_pred_dict['Super_Class'],
-                     "Intent":class_pred_dict['Intent'],
-                     "Sentiment":class_pred_dict['Sentiment'],
-                     "Sub_Class":class_pred_dict['Sub_Class']
-                })
+                    "identifier_key": identifier_key,
+                    "datetime": datetime,
+                    "user_message": user_message,
+                    "Super_Class": class_pred_dict["Super_Class"],
+                    "Intent": class_pred_dict["Intent"],
+                    "Sentiment": class_pred_dict["Sentiment"],
+                    "Sub_Class": class_pred_dict["Sub_Class"],
+                }
+            )
             return
         sub_class_prompt = (
             Base_Prompt
@@ -73,7 +74,6 @@ def grievance_classifier(datetime, user_name, platform_name, user_message):
         sub_class_pred = get_model_response(sub_class_prompt)[0]
         class_pred_dict["Sub_Class"] = sub_class_pred
         print("prediction is:", class_pred_dict)
-        
 
         # sh.update_cell(counter, 1, identifier_key)
         # sh.update_cell(counter, 2, user_message)
@@ -81,15 +81,16 @@ def grievance_classifier(datetime, user_name, platform_name, user_message):
         #     sh.update_cell(counter, index + 3, class_pred_dict[key])
 
         table.put_item(
-                Item={
-                     "identifier_key": identifier_key,
-                     "datetime": datetime,
-                     "user_message": user_message,
-                     "Super_Class": class_pred_dict['Super_Class'],
-                     "Intent":class_pred_dict['Intent'],
-                     "Sentiment":class_pred_dict['Sentiment'],
-                     "Sub_Class":class_pred_dict['Sub_Class']
-        })
+            Item={
+                "identifier_key": identifier_key,
+                "datetime": datetime,
+                "user_message": user_message,
+                "Super_Class": class_pred_dict["Super_Class"],
+                "Intent": class_pred_dict["Intent"],
+                "Sentiment": class_pred_dict["Sentiment"],
+                "Sub_Class": class_pred_dict["Sub_Class"],
+            }
+        )
     except Exception as e:
         print("Exception is:", e)
 
@@ -102,7 +103,6 @@ def start_grievance_worker():
         platform_name = data["platform_name"]
         user_message = data["user_message"]
         grievance_classifier(datetime, user_name, platform_name, user_message)
-
 
 
 # list_of_tweets =[ {

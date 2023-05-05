@@ -5,7 +5,12 @@ import time
 import pandas as pd
 from ftfy import fix_text
 from playwright.sync_api import sync_playwright
-from src.grievance_handler.constants import twitter_scrapper_scroller, twitter_email_id, twitter_login_id, twitter_password
+from src.grievance_handler.constants import (
+    twitter_scrapper_scroller,
+    twitter_email_id,
+    twitter_login_id,
+    twitter_password,
+)
 
 
 def clean_tweets(tweets):
