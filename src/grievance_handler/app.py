@@ -1,11 +1,16 @@
 import boto3
+import pymysql
 import difflib
+from datetime import datetime
+from datetime import timezone
 from src.grievance_handler.constants import *
 from src.grievance_handler.scrapper_twitter import get_tweets
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
-dynamodb = boto3.resource("dynamodb")
-table = dynamodb.Table("Dult_Grievance_Classification")
+db = pymysql.connect(
+    host=aws_rds_host, user=aws_rds_username, password=aws_rds_password, db=aws_rds_db
+)
+cursor = db.cursor()
 class_list = [Super_Class, Intent, Sentiment]
 
 model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-large")
@@ -31,8 +36,17 @@ def grievance_classifier(datetime, user_name, platform_name, user_message):
         "Sub_Class": "",
     }
     try:
+        formatted_datetime = datetime.fromisoformat(datetime[:-1]).astimezone(
+            timezone.utc
+        )
+        formatted_datetime = formatted_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        formatted_datetime_obj = datetime.strptime(
+            formatted_datetime, "%Y-%m-%d %H:%M:%S"
+        )
+        identifier_key = (
+            str(formatted_datetime_obj) + "_" + user_name + "_" + platform_name
+        )
         for class_name in class_list:
-            identifier_key = str(datetime) + "_" + user_name + "_" + platform_name
             prompt = (
                 Base_Prompt
                 + user_message
@@ -52,17 +66,20 @@ def grievance_classifier(datetime, user_name, platform_name, user_message):
         if class_pred_dict["Super_Class"] != "Others":
             sub_class_list = Sub_Class_Dictionary[class_pred_dict["Super_Class"]]
         else:
-            table.put_item(
-                Item={
-                    "identifier_key": identifier_key,
-                    "datetime": datetime,
-                    "user_message": user_message,
-                    "Super_Class": class_pred_dict["Super_Class"],
-                    "Intent": class_pred_dict["Intent"],
-                    "Sentiment": class_pred_dict["Sentiment"],
-                    "Sub_Class": class_pred_dict["Sub_Class"],
-                }
+            sql = (
+                """ insert into dult_grievance_classification(id,Date,Intent,Sentiment,Sub_Class,Super_Class,user_message) values('%s','%s', '%s', '%s','%s','%s','%s')"""
+                % (
+                    identifier_key,
+                    formatted_datetime_obj,
+                    class_pred_dict["Intent"],
+                    class_pred_dict["Sentiment"],
+                    class_pred_dict["Sub_Class"],
+                    class_pred_dict["Super_Class"],
+                    user_message,
+                )
             )
+            cursor.execute(sql)
+            db.commit()
             return
         sub_class_prompt = (
             Base_Prompt
@@ -75,22 +92,21 @@ def grievance_classifier(datetime, user_name, platform_name, user_message):
         class_pred_dict["Sub_Class"] = sub_class_pred
         print("prediction is:", class_pred_dict)
 
-        # sh.update_cell(counter, 1, identifier_key)
-        # sh.update_cell(counter, 2, user_message)
-        # for index, key in enumerate(class_pred_dict):
-        #     sh.update_cell(counter, index + 3, class_pred_dict[key])
-
-        table.put_item(
-            Item={
-                "identifier_key": identifier_key,
-                "datetime": datetime,
-                "user_message": user_message,
-                "Super_Class": class_pred_dict["Super_Class"],
-                "Intent": class_pred_dict["Intent"],
-                "Sentiment": class_pred_dict["Sentiment"],
-                "Sub_Class": class_pred_dict["Sub_Class"],
-            }
+        sql = (
+            """ insert into dult_grievance_classification(id,Date,Intent,Sentiment,Sub_Class,Super_Class,user_message) values('%s','%s', '%s', '%s','%s','%s','%s')"""
+            % (
+                identifier_key,
+                formatted_datetime_obj,
+                class_pred_dict["Intent"],
+                class_pred_dict["Sentiment"],
+                class_pred_dict["Sub_Class"],
+                class_pred_dict["Super_Class"],
+                user_message,
+            )
         )
+        cursor.execute(sql)
+        db.commit()
+
     except Exception as e:
         print("Exception is:", e)
 
@@ -103,11 +119,3 @@ def start_grievance_worker():
         platform_name = data["platform_name"]
         user_message = data["user_message"]
         grievance_classifier(datetime, user_name, platform_name, user_message)
-
-
-# list_of_tweets =[ {
-#     "datetime" : "2023.05.01",
-#     "user_name" : "shubham",
-#     "platform_name" : "twitter",
-#     "user_message" : "I have been charged more than the issued price for a route"
-# }]

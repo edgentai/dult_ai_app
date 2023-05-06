@@ -1,0 +1,30 @@
+# list_of_tweets =[ {
+#     "datetime" : "2023.05.01",
+#     "user_name" : "shubham",
+#     "platform_name" : "twitter",
+#     "user_message" : "I have been charged more than the issued price for a route"
+# }]
+
+
+# dynamodb = boto3.resource("dynamodb")
+# table = dynamodb.Table("Dult_Grievance_Classification")
+
+# table.put_item(
+#     Item={
+#         "identifier_key": identifier_key,
+#         "datetime": datetime,
+#         "user_message": user_message,
+#         "Super_Class": class_pred_dict["Super_Class"],
+#         "Intent": class_pred_dict["Intent"],
+#         "Sentiment": class_pred_dict["Sentiment"],
+#         "Sub_Class": class_pred_dict["Sub_Class"],
+#     }
+# )
+
+
+# sh.update_cell(counter, 1, identifier_key)
+# sh.update_cell(counter, 2, user_message)
+# for index, key in enumerate(class_pred_dict):
+#     sh.update_cell(counter, index + 3, class_pred_dict[key])
+
+
