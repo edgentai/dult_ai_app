@@ -60,16 +60,19 @@ def get_tweets():
         # get HTML
         page.wait_for_timeout(6_000)
         page.fill('input[name="text"]', twitter_email_id)
+        page.wait_for_timeout(3_000)
         page.locator('"Next"').click()
         try:
             page.fill('input[name="text"]', twitter_login_id)
+            page.wait_for_timeout(6_000)
             page.locator('"Next"').click()
         except:
             pass
         page.fill('input[name="password"]', twitter_password)
+        page.wait_for_timeout(2_000)
         page.locator('"Log in"').click()
 
-        page.wait_for_timeout(2_000)
+        page.wait_for_timeout(10_000)
         page.goto("https://twitter.com/search?q=bmtc&f=live")
 
         page.wait_for_selector("//article[@data-testid='tweet']")
@@ -78,7 +81,7 @@ def get_tweets():
 
         for i in range(twitter_scrapper_scroller):
             page.mouse.wheel(0, 15000)
-            page.wait_for_timeout(1000)
+            page.wait_for_timeout(10000)
             new_tweets = page.query_selector_all("//article[@data-testid='tweet']")
             for tweet in new_tweets:
                 html = tweet.inner_html()

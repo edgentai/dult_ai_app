@@ -28,7 +28,7 @@ def namestr(obj, namespace):
     return [name for name in namespace if namespace[name] is obj]
 
 
-def grievance_classifier(datetime, user_name, platform_name, user_message):
+def grievance_classifier(datetime_value, user_name, platform_name, user_message):
     class_pred_dict = {
         "Super_Class": "",
         "Intent": "",
@@ -36,7 +36,7 @@ def grievance_classifier(datetime, user_name, platform_name, user_message):
         "Sub_Class": "",
     }
     try:
-        formatted_datetime = datetime.fromisoformat(datetime[:-1]).astimezone(
+        formatted_datetime = datetime.fromisoformat(datetime_value[:-1]).astimezone(
             timezone.utc
         )
         formatted_datetime = formatted_datetime.strftime("%Y-%m-%d %H:%M:%S")
@@ -114,8 +114,8 @@ def grievance_classifier(datetime, user_name, platform_name, user_message):
 def start_grievance_worker():
     list_of_tweets = get_tweets()
     for data in list_of_tweets:
-        datetime = data["datetime"]
+        datetime_value = data["datetime"]
         user_name = data["user_name"]
         platform_name = data["platform_name"]
         user_message = data["user_message"]
-        grievance_classifier(datetime, user_name, platform_name, user_message)
+        grievance_classifier(datetime_value, user_name, platform_name, user_message)
