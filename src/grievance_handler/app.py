@@ -1,27 +1,53 @@
-import boto3
 import pymysql
 import difflib
 from datetime import datetime
 from datetime import timezone
+import openai
+from tenacity import retry, stop_after_attempt, wait_random_exponential
 from src.grievance_handler.constants import *
 from src.grievance_handler.scrapper_twitter import get_tweets
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
+
+openai.api_key = "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"
 db = pymysql.connect(
     host=aws_rds_host, user=aws_rds_username, password=aws_rds_password, db=aws_rds_db
 )
 cursor = db.cursor()
 class_list = [Super_Class, Intent, Sentiment]
 
-model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-large")
-tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-large")
+# model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-large")
+# tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-large")
 
-
+@retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
 def get_model_response(prompt):
-    inputs = tokenizer(prompt, return_tensors="pt")
-    outputs = model.generate(**inputs)
-    model_response = tokenizer.batch_decode(outputs, skip_special_tokens=True)
-    return model_response
+    message_list = [
+        {
+            "role": "system",
+            "content": "You are a helpful assistant that classifies a text into provided classes",
+        },
+        {"role": "user", "content": prompt},
+    ]
+    solution = openai.ChatCompletion.create(
+        model=Chat_Gpt_Model_Config["model"],
+        messages=message_list,
+        temperature=Chat_Gpt_Model_Config["temperature"],
+        top_p=Chat_Gpt_Model_Config["temperature"],
+        n=Chat_Gpt_Model_Config["n"],
+        stream=Chat_Gpt_Model_Config["stream"],
+        stop=Chat_Gpt_Model_Config["stop"],
+        max_tokens=Chat_Gpt_Model_Config["max_tokens"],
+        presence_penalty=Chat_Gpt_Model_Config["presence_penalty"],
+        frequency_penalty=Chat_Gpt_Model_Config["frequency_penalty"],
+    )
+    chatgpt_response = solution["choices"][0]["message"]["content"]
+    return chatgpt_response
+
+# def get_model_response(prompt):
+#     inputs = tokenizer(prompt, return_tensors="pt")
+#     outputs = model.generate(**inputs)
+#     model_response = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+#     return model_response
 
 
 def namestr(obj, namespace):
@@ -47,19 +73,34 @@ def grievance_classifier(datetime_value, user_name, platform_name, user_message)
             str(formatted_datetime_obj) + "_" + user_name + "_" + platform_name
         )
         for class_name in class_list:
+            # prompt = (
+            #     Base_Prompt
+            #     + user_message
+            #     + "\n"
+            #     + str(class_name)
+            #     + "\nResponse Format - Text:class"
+            # )
+            # class_pred = get_model_response(prompt)[0]
+            # class_pred_corrected = difflib.get_close_matches(class_pred, class_name)
+            # if class_pred_corrected:
+            #     class_pred_corrected = class_pred_corrected[0]
+            # else:
+            #     class_pred_corrected = "Others"
+            # class_pred_dict[namestr(class_name, globals())[0]] = class_pred_corrected
             prompt = (
                 Base_Prompt
                 + user_message
                 + "\n"
                 + str(class_name)
-                + "\nResponse Format - Text:class"
+                + "\nResponse Format - class"
             )
-            class_pred = get_model_response(prompt)[0]
+            class_pred = get_model_response(prompt)
             class_pred_corrected = difflib.get_close_matches(class_pred, class_name)
             if class_pred_corrected:
                 class_pred_corrected = class_pred_corrected[0]
             else:
                 class_pred_corrected = "Others"
+                
             class_pred_dict[namestr(class_name, globals())[0]] = class_pred_corrected
 
         sub_class_list = []
@@ -86,9 +127,10 @@ def grievance_classifier(datetime_value, user_name, platform_name, user_message)
             + user_message
             + "\n"
             + str(sub_class_list)
-            + "\nResponse Format - Text:class"
+            + "\nResponse Format - class"
         )
-        sub_class_pred = get_model_response(sub_class_prompt)[0]
+        # sub_class_pred = get_model_response(sub_class_prompt)[0]
+        sub_class_pred = get_model_response(sub_class_prompt)
         class_pred_dict["Sub_Class"] = sub_class_pred
         print("prediction is:", class_pred_dict)
 

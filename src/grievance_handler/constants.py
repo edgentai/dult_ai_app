@@ -75,23 +75,23 @@ Sub_Class_Dictionary = {
     "Website/App Related Issue": ["Website Related Complaints", "Mobile app related"],
 }
 
-Intent = ["Urgnet Actionable", "Appeal"]
+Intent = ["Urgent Actionable", "Appeal/Complaint/Request"]
 
 Sentiment = ["Positive", "Negative", "Neutral"]
 
-# Chat_Gpt_Model_Config = {
-#     "model": "gpt-3.5-turbo",
-#     "temperature": 0.7,
-#     "top_p": 1,
-#     "n": 1,
-#     "stream": False,
-#     "stop": None,
-#     "presence_penalty": 0,
-#     "frequency_penalty": 0,
-#     "max_tokens": 32,
-# }
+Chat_Gpt_Model_Config = {
+    "model": "gpt-3.5-turbo",
+    "temperature": 0.7,
+    "top_p": 1,
+    "n": 1,
+    "stream": False,
+    "stop": None,
+    "presence_penalty": 0,
+    "frequency_penalty": 0,
+    "max_tokens": 32,
+}
 
-Base_Prompt = "Given the text classify among the classes given in the list\n"
+Base_Prompt = "Given the text classify among the classes given in the list. If text doesnt belong to any class, simply return NONE\n"
 
 twitter_scrapper_scroller = 5
 
