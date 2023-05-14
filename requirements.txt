@@ -8,3 +8,5 @@ bs4
 torch
 transformers
 sentencepiece
+openai
+tenacity
