@@ -9,7 +9,7 @@ from src.grievance_handler.scrapper_twitter import get_tweets
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
 
-openai.api_key = "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"
+openai.api_key = "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"
 db = pymysql.connect(
     host=aws_rds_host, user=aws_rds_username, password=aws_rds_password, db=aws_rds_db
 )
@@ -131,7 +131,12 @@ def grievance_classifier(datetime_value, user_name, platform_name, user_message)
         )
         # sub_class_pred = get_model_response(sub_class_prompt)[0]
         sub_class_pred = get_model_response(sub_class_prompt)
-        class_pred_dict["Sub_Class"] = sub_class_pred
+        subclass_pred_corrected = difflib.get_close_matches(sub_class_pred, sub_class_list)
+        if subclass_pred_corrected:
+            subclass_pred_corrected = subclass_pred_corrected[0]
+        else:
+            subclass_pred_corrected = "Others"
+        class_pred_dict["Sub_Class"] = subclass_pred_corrected
         print("prediction is:", class_pred_dict)
 
         sql = (
