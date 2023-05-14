@@ -9,7 +9,7 @@ from src.grievance_handler.scrapper_twitter import get_tweets
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
 
-openai.api_key = "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"
+openai.api_key = "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"
 db = pymysql.connect(
     host=aws_rds_host, user=aws_rds_username, password=aws_rds_password, db=aws_rds_db
 )
