@@ -1,6 +1,7 @@
 from boto3.s3.transfer import TransferConfig
 import difflib
 import boto3
+import os
 from tenacity import retry, stop_after_attempt, wait_random_exponential
 from datetime import datetime
 from datetime import timezone
@@ -59,6 +60,22 @@ def grievance_classifier(
             str(formatted_datetime_obj) + "_" + user_name + "_" + platform_name
         )
         class_list = [Super_Class, Intent, Sentiment]
+
+        initial_prompt = (
+                "Is the below sentence a complaint/Appeal/Grievance - Reply only in a 'yes' or a 'no'\n" + user_message
+        )
+
+        class_pred = get_model_response(initial_prompt, tokenizer, model)[0]
+        class_pred_corrected = difflib.get_close_matches(class_pred, ["yes", "no"])
+        if class_pred_corrected:
+            class_pred_corrected = class_pred_corrected[0]
+        else:
+            class_pred_corrected = "yes"
+        
+        if not class_pred_corrected:
+            return
+        
+
         for class_name in class_list:
             prompt = (
                 Base_Prompt
@@ -67,7 +84,7 @@ def grievance_classifier(
                 + str(class_name)
                 + "\nResponse Format - class"
             )
-            class_pred = get_model_response(prompt, tokenizer, model)
+            class_pred = get_model_response(prompt, tokenizer, model)[0]
             class_pred_corrected = difflib.get_close_matches(class_pred, class_name)
             if class_pred_corrected:
                 class_pred_corrected = class_pred_corrected[0]
@@ -103,7 +120,7 @@ def grievance_classifier(
             + "\nResponse Format - class"
         )
         # sub_class_pred = get_model_response(sub_class_prompt)[0]
-        sub_class_pred = get_model_response(sub_class_prompt, tokenizer, model)
+        sub_class_pred = get_model_response(sub_class_prompt, tokenizer, model)[0]
         subclass_pred_corrected = difflib.get_close_matches(
             sub_class_pred, sub_class_list
         )

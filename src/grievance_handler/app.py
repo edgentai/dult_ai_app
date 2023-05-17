@@ -1,9 +1,9 @@
 import pymysql
 import os
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-from utils import download_from_s3, grievance_classifier
+from src.grievance_handler.utils import download_from_s3, grievance_classifier
 from src.grievance_handler.scrapper_twitter import get_tweets
-from constants import (
+from src.grievance_handler.constants import (
     s3_bucket_name,
     remote_dir_name,
     model_path,
