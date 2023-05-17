@@ -27,8 +27,11 @@ def download_from_s3(bucket_name: str, remote_dir_name: str, model_path: str):
     PATH = os.getcwd()
     tc_model_path = os.path.join(PATH, model_path)
     for obj in bucket.objects.filter(Prefix=remote_dir_name):
-        download_path = tc_model_path + "/" + obj.key
-        bucket.download_file(obj.key, download_path, Config=config)
+        try:
+            download_path = tc_model_path + "/" + obj.key
+            bucket.download_file(obj.key, download_path, Config=config)
+        except:
+            pass
 
 
 def get_model_response(prompt, tokenizer, model):
