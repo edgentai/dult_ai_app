@@ -28,3 +28,59 @@
 #     sh.update_cell(counter, index + 3, class_pred_dict[key])
 
 
+openai.api_key = "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"
+
+
+@retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
+def get_model_response(prompt):
+    message_list = [
+        {
+            "role": "system",
+            "content": "You are a helpful assistant that classifies a text into provided classes",
+        },
+        {"role": "user", "content": prompt},
+    ]
+    solution = openai.ChatCompletion.create(
+        model=Chat_Gpt_Model_Config["model"],
+        messages=message_list,
+        temperature=Chat_Gpt_Model_Config["temperature"],
+        top_p=Chat_Gpt_Model_Config["temperature"],
+        n=Chat_Gpt_Model_Config["n"],
+        stream=Chat_Gpt_Model_Config["stream"],
+        stop=Chat_Gpt_Model_Config["stop"],
+        max_tokens=Chat_Gpt_Model_Config["max_tokens"],
+        presence_penalty=Chat_Gpt_Model_Config["presence_penalty"],
+        frequency_penalty=Chat_Gpt_Model_Config["frequency_penalty"],
+    )
+    chatgpt_response = solution["choices"][0]["message"]["content"]
+    return chatgpt_response
+
+
+    Chat_Gpt_Model_Config = {
+    "model": "gpt-3.5-turbo",
+    "temperature": 0.7,
+    "top_p": 1,
+    "n": 1,
+    "stream": False,
+    "stop": None,
+    "presence_penalty": 0,
+    "frequency_penalty": 0,
+    "max_tokens": 32,
+}
+
+
+
+    # prompt = (
+            #     Base_Prompt
+            #     + user_message
+            #     + "\n"
+            #     + str(class_name)
+            #     + "\nResponse Format - Text:class"
+            # )
+            # class_pred = get_model_response(prompt)[0]
+            # class_pred_corrected = difflib.get_close_matches(class_pred, class_name)
+            # if class_pred_corrected:
+            #     class_pred_corrected = class_pred_corrected[0]
+            # else:
+            #     class_pred_corrected = "Others"
+            # class_pred_dict[namestr(class_name, globals())[0]] = class_pred_corrected

@@ -95,9 +95,9 @@ Base_Prompt = "Given the text classify among the classes given in the list. If t
 
 twitter_scrapper_scroller = 5
 
-twitter_email_id = "dhirajdddaga@gmail.com"
-twitter_login_id = "dhirajdddaga"
-twitter_password = "Putin_lodu"
+twitter_email_id = "**************"
+twitter_login_id = "**************"
+twitter_password = "**************"
 aws_rds_host = "dult-database.cndfa7fhtn3n.us-east-1.rds.amazonaws.com"
 aws_rds_username = "admin"
 aws_rds_password = "dult__2023"
