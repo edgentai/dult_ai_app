@@ -114,7 +114,7 @@ def grievance_classifier(
                 + str(class_name)
                 + "\nResponse Format - class"
             )
-            class_pred = get_model_response(prompt, tokenizer, model)
+            class_pred = get_model_response(prompt)
             class_pred_corrected = difflib.get_close_matches(class_pred, class_name)
             if class_pred_corrected:
                 class_pred_corrected = class_pred_corrected[0]
@@ -150,7 +150,7 @@ def grievance_classifier(
             + "\nResponse Format - class"
         )
         # sub_class_pred = get_model_response(sub_class_prompt)[0]
-        sub_class_pred = get_model_response(sub_class_prompt, tokenizer, model)[0]
+        sub_class_pred = get_model_response(sub_class_prompt)
         subclass_pred_corrected = difflib.get_close_matches(
             sub_class_pred, sub_class_list
         )
