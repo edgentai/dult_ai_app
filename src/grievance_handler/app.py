@@ -13,17 +13,16 @@ from src.grievance_handler.constants import (
     aws_rds_username,
 )
 
-
 db = pymysql.connect(
     host=aws_rds_host, user=aws_rds_username, password=aws_rds_password, db=aws_rds_db
 )
 
 
 def start_grievance_worker():
-    download_from_s3(s3_bucket_name, remote_dir_name, model_path)
-    model_classifier_path = os.path.join(os.getcwd(), model_path, remote_dir_name)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_classifier_path)
-    tokenizer = AutoTokenizer.from_pretrained(model_classifier_path)
+    # download_from_s3(s3_bucket_name, remote_dir_name, model_path)
+    # model_classifier_path = os.path.join(os.getcwd(), model_path, remote_dir_name)
+    # model = AutoModelForSeq2SeqLM.from_pretrained(model_classifier_path)
+    # tokenizer = AutoTokenizer.from_pretrained(model_classifier_path)
     list_of_tweets = get_tweets()
 
     for data in list_of_tweets:
@@ -32,5 +31,5 @@ def start_grievance_worker():
         platform_name = data["platform_name"]
         user_message = data["user_message"]
         grievance_classifier(
-            datetime_value, user_name, platform_name, user_message, db, model, tokenizer
+            datetime_value, user_name, platform_name, user_message, db
         )

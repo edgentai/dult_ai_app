@@ -5,6 +5,8 @@ import os
 from tenacity import retry, stop_after_attempt, wait_random_exponential
 from datetime import datetime
 from datetime import timezone
+import openai
+openai.api_key = "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"
 
 from src.grievance_handler.constants import (
     Super_Class,
@@ -12,6 +14,7 @@ from src.grievance_handler.constants import (
     Sentiment,
     Base_Prompt,
     Sub_Class_Dictionary,
+    Chat_Gpt_Model_Config,
 )
 
 
@@ -34,15 +37,39 @@ def download_from_s3(bucket_name: str, remote_dir_name: str, model_path: str):
             pass
 
 
-def get_model_response(prompt, tokenizer, model):
-    inputs = tokenizer(prompt, return_tensors="pt")
-    outputs = model.generate(**inputs)
-    model_response = tokenizer.batch_decode(outputs, skip_special_tokens=True)
-    return model_response
+# def get_model_response(prompt, tokenizer, model):
+#     inputs = tokenizer(prompt, return_tensors="pt")
+#     outputs = model.generate(**inputs)
+#     model_response = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+#     return model_response
+
+@retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
+def get_model_response(prompt):
+    message_list = [
+        {
+            "role": "system",
+            "content": "You are a helpful assistant that classifies a text into provided classes",
+        },
+        {"role": "user", "content": prompt},
+    ]
+    solution = openai.ChatCompletion.create(
+        model=Chat_Gpt_Model_Config["model"],
+        messages=message_list,
+        temperature=Chat_Gpt_Model_Config["temperature"],
+        top_p=Chat_Gpt_Model_Config["temperature"],
+        n=Chat_Gpt_Model_Config["n"],
+        stream=Chat_Gpt_Model_Config["stream"],
+        stop=Chat_Gpt_Model_Config["stop"],
+        max_tokens=Chat_Gpt_Model_Config["max_tokens"],
+        presence_penalty=Chat_Gpt_Model_Config["presence_penalty"],
+        frequency_penalty=Chat_Gpt_Model_Config["frequency_penalty"],
+    )
+    chatgpt_response = solution["choices"][0]["message"]["content"]
+    return chatgpt_response
 
 
 def grievance_classifier(
-    datetime_value, user_name, platform_name, user_message, db, model, tokenizer
+    datetime_value, user_name, platform_name, user_message, db
 ):
     class_pred_dict = {
         "Super_Class": "",
@@ -68,7 +95,7 @@ def grievance_classifier(
                 "Is the below sentence a complaint/Appeal/Grievance - Reply only in a 'yes' or a 'no'\n" + user_message
         )
 
-        class_pred = get_model_response(initial_prompt, tokenizer, model)[0]
+        class_pred = get_model_response(initial_prompt)
         class_pred_corrected = difflib.get_close_matches(class_pred, ["yes", "no"])
         if class_pred_corrected:
             class_pred_corrected = class_pred_corrected[0]
@@ -87,7 +114,7 @@ def grievance_classifier(
                 + str(class_name)
                 + "\nResponse Format - class"
             )
-            class_pred = get_model_response(prompt, tokenizer, model)[0]
+            class_pred = get_model_response(prompt, tokenizer, model)
             class_pred_corrected = difflib.get_close_matches(class_pred, class_name)
             if class_pred_corrected:
                 class_pred_corrected = class_pred_corrected[0]
