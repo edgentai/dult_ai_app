@@ -198,7 +198,7 @@ def grievance_classifier(
     }
     cursor = db.cursor()
     try:
-        formatted_datetime = datetime.fromisoformat(datetime_value[:-1]).astimezone(
+        formatted_datetime = datetime.fromisoformat(datetime_value).astimezone(
             timezone.utc
         )
         formatted_datetime = formatted_datetime.strftime("%Y-%m-%d %H:%M:%S")
