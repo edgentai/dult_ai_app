@@ -11,6 +11,11 @@ from src.grievance_handler.constants import (
     twitter_login_id,
     twitter_password,
 )
+import requests
+import os
+import json
+
+bearer_token = "AAAAAAAAAAAAAAAAAAAAAOoMoQEAAAAAcGMSViQXxZLhffTROqyAfmWNDKk%3DEQyJCdtcylJLtRqtdI1q1munZhrg8iFadeOrIa0ZAftNsBXXfE"
 
 
 def clean_tweets(tweets):
@@ -93,3 +98,33 @@ def get_tweets():
             page.mouse.wheel(0, 15000)
         page.wait_for_timeout(20_000)
     return list_tweets
+
+
+
+def bearer_oauth(r):
+    """
+    Method required by bearer token authentication.
+    """
+
+    r.headers["Authorization"] = f"Bearer {bearer_token}"
+    r.headers["User-Agent"] = "v2RecentSearchPython"
+    return r
+
+def connect_to_endpoint(url, params):
+    response = requests.get(url, auth=bearer_oauth, params=params)
+    print(response.status_code)
+    if response.status_code != 200:
+        raise Exception(response.status_code, response.text)
+    return response.json()
+
+
+def get_tweets_api():
+    search_url = "https://api.twitter.com/2/tweets/search/recent"
+    
+    # Optional params: start_time,end_time,since_id,until_id,max_results,next_token,
+    # expansions,tweet.fields,media.fields,poll.fields,place.fields,user.fields
+    query_params = {'query': '#bmtc','tweet.fields': 'author_id'}
+    
+    json_response = connect_to_endpoint(search_url, query_params)
+    #print(json.dumps(json_response, indent=4, sort_keys=True))
+    return json_response['data']
