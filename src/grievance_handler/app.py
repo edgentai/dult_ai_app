@@ -23,7 +23,7 @@ def start_grievance_worker():
     # model_classifier_path = os.path.join(os.getcwd(), model_path, remote_dir_name)
     # model = AutoModelForSeq2SeqLM.from_pretrained(model_classifier_path)
     # tokenizer = AutoTokenizer.from_pretrained(model_classifier_path)
-    list_of_tweets = get_tweets()
+    list_of_tweets = get_tweets_api()
 
     for data in list_of_tweets:
         datetime_value = data["created_at"][:10]
