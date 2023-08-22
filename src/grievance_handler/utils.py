@@ -68,6 +68,125 @@ def get_model_response(prompt):
     return chatgpt_response
 
 
+# def grievance_classifier(
+#     datetime_value, user_name, platform_name, user_message, db
+# ):
+#     class_pred_dict = {
+#         "Super_Class": "",
+#         "Intent": "",
+#         "Sentiment": "",
+#         "Sub_Class": "",
+#     }
+#     cursor = db.cursor()
+#     try:
+#         formatted_datetime = datetime.fromisoformat(datetime_value[:-1]).astimezone(
+#             timezone.utc
+#         )
+#         formatted_datetime = formatted_datetime.strftime("%Y-%m-%d %H:%M:%S")
+#         formatted_datetime_obj = datetime.strptime(
+#             formatted_datetime, "%Y-%m-%d %H:%M:%S"
+#         )
+#         identifier_key = (
+#             str(formatted_datetime_obj) + "_" + user_name + "_" + platform_name
+#         )
+#         class_list = [Super_Class, Intent, Sentiment]
+
+#         initial_prompt = (
+#                 "Is the below sentence a complaint/Appeal/Grievance - Reply only in a 'yes' or a 'no'\n" + user_message
+#         )
+
+#         class_pred = get_model_response(initial_prompt)
+#         class_pred_corrected = difflib.get_close_matches(class_pred, ["yes", "no"])
+#         if class_pred_corrected:
+#             class_pred_corrected = class_pred_corrected[0]
+#         else:
+#             class_pred_corrected = "yes"
+        
+#         if not class_pred_corrected:
+#             return
+        
+
+#         for class_name in class_list:
+#             prompt = (
+#                 Base_Prompt
+#                 + user_message
+#                 + "\n"
+#                 + str(class_name)
+#                 + "\nResponse Format - class"
+#             )
+#             class_pred = get_model_response(prompt)
+#             class_pred_corrected = difflib.get_close_matches(class_pred, class_name)
+#             if class_pred_corrected:
+#                 class_pred_corrected = class_pred_corrected[0]
+#             else:
+#                 class_pred_corrected = "Others"
+
+#             class_pred_dict[namestr(class_name, globals())[0]] = class_pred_corrected
+
+#         sub_class_list = []
+#         if class_pred_dict["Super_Class"] != "Others":
+#             sub_class_list = Sub_Class_Dictionary[class_pred_dict["Super_Class"]]
+#         else:
+#             sql = (
+#                 """ insert into dult_grievance_classification(id,Date,Intent,Sentiment,Sub_Class,Super_Class,user_message) values('%s','%s', '%s', '%s','%s','%s','%s')"""
+#                 % (
+#                     identifier_key,
+#                     formatted_datetime_obj,
+#                     class_pred_dict["Intent"],
+#                     class_pred_dict["Sentiment"],
+#                     class_pred_dict["Sub_Class"],
+#                     class_pred_dict["Super_Class"],
+#                     user_message,
+#                 )
+#             )
+#             cursor.execute(sql)
+#             db.commit()
+#             return
+#         sub_class_prompt = (
+#             Base_Prompt
+#             + user_message
+#             + "\n"
+#             + str(sub_class_list)
+#             + "\nResponse Format - class"
+#         )
+#         # sub_class_pred = get_model_response(sub_class_prompt)[0]
+#         sub_class_pred = get_model_response(sub_class_prompt)
+#         subclass_pred_corrected = difflib.get_close_matches(
+#             sub_class_pred, sub_class_list
+#         )
+#         if subclass_pred_corrected:
+#             subclass_pred_corrected = subclass_pred_corrected[0]
+#         else:
+#             subclass_pred_corrected = "Others"
+#         class_pred_dict["Sub_Class"] = subclass_pred_corrected
+#         print("prediction is:", class_pred_dict)
+
+#         sql = (
+#             """ insert into dult_grievance_classification(id,Date,Intent,Sentiment,Sub_Class,Super_Class,user_message) values('%s','%s', '%s', '%s','%s','%s','%s')"""
+#             % (
+#                 identifier_key,
+#                 formatted_datetime_obj,
+#                 class_pred_dict["Intent"],
+#                 class_pred_dict["Sentiment"],
+#                 class_pred_dict["Sub_Class"],
+#                 class_pred_dict["Super_Class"],
+#                 user_message,
+#             )
+#         )
+#         cursor.execute(sql)
+#         db.commit()
+
+#     except Exception as e:
+#         print("Exception is:", e)
+
+def get_topic(user_message):
+    topic_prompt = (
+            "For the given text, identify the high level topic in two three words\n"
+            + user_message
+        )
+    topic_pred = get_model_response(topic_prompt)
+    return topic_pred
+
 def grievance_classifier(
     datetime_value, user_name, platform_name, user_message, db
 ):
@@ -123,12 +242,16 @@ def grievance_classifier(
 
             class_pred_dict[namestr(class_name, globals())[0]] = class_pred_corrected
 
+        ###### Topic identify #####
+        topic_message = get_topic(user_message)
+        class_pred_dict["Topic"] = topic_message
+
         sub_class_list = []
         if class_pred_dict["Super_Class"] != "Others":
             sub_class_list = Sub_Class_Dictionary[class_pred_dict["Super_Class"]]
         else:
             sql = (
-                """ insert into dult_grievance_classification(id,Date,Intent,Sentiment,Sub_Class,Super_Class,user_message) values('%s','%s', '%s', '%s','%s','%s','%s')"""
+                """ insert into dult_grievance_classification(id,Date,Intent,Sentiment,Sub_Class,Super_Class,Topic,user_message) values('%s','%s', '%s', '%s','%s','%s','%s','%s')"""
                 % (
                     identifier_key,
                     formatted_datetime_obj,
@@ -136,6 +259,7 @@ def grievance_classifier(
                     class_pred_dict["Sentiment"],
                     class_pred_dict["Sub_Class"],
                     class_pred_dict["Super_Class"],
+                    class_pred_dict["Topic"]
                     user_message,
                 )
             )
@@ -162,7 +286,7 @@ def grievance_classifier(
         print("prediction is:", class_pred_dict)
 
         sql = (
-            """ insert into dult_grievance_classification(id,Date,Intent,Sentiment,Sub_Class,Super_Class,user_message) values('%s','%s', '%s', '%s','%s','%s','%s')"""
+            """ insert into dult_grievance_classification(id,Date,Intent,Sentiment,Sub_Class,Super_Class,Topic,user_message) values('%s','%s','%s', '%s', '%s','%s','%s','%s')"""
             % (
                 identifier_key,
                 formatted_datetime_obj,
@@ -170,6 +294,7 @@ def grievance_classifier(
                 class_pred_dict["Sentiment"],
                 class_pred_dict["Sub_Class"],
                 class_pred_dict["Super_Class"],
+                class_pred_dict["Topic"],
                 user_message,
             )
         )
