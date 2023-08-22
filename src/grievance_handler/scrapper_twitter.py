@@ -123,7 +123,7 @@ def get_tweets_api():
     
     # Optional params: start_time,end_time,since_id,until_id,max_results,next_token,
     # expansions,tweet.fields,media.fields,poll.fields,place.fields,user.fields
-    query_params = {'query': '#bmtc','tweet.fields': 'author_id'}
+    query_params = {'query': '#bmtc','tweet.fields': 'author_id', 'max_results':100}
     
     json_response = connect_to_endpoint(search_url, query_params)
     #print(json.dumps(json_response, indent=4, sort_keys=True))
